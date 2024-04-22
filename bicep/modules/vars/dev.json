@@ -1,0 +1,12 @@
+{
+    "_comment": "https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/patterns-shared-variable-file#example-1-naming-prefixes",
+    
+    "name_prefix": "demo",
+    "short_location": "sti",
+    "location": "southindia",
+    "unique_stage": "dev",
+    
+    "resourceTags": {
+        "Environment": "Development"
+      }
+}

@@ -1,0 +1,49 @@
+name: applications_$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+  - name: deploy_dev
+    default: true     
+    type: boolean
+    displayName: Deploy to DEV
+  - name: deploy_qa
+    default: false     
+    type: boolean
+    displayName: Deploy to TEST
+  - name: deploy_name
+    type: string
+    displayName: Deploy Name    
+
+trigger: none
+
+pool:
+  vmImage: "ubuntu-latest"
+  workspace:
+    clean: all  
+
+stages:
+
+- ${{ if eq( parameters.deploy_dev, true) }}:
+  - template: \cicd\update-applications.yml
+    parameters:
+      app_name: demo-app01
+      environment_friendly_name: DEV
+      environment_name: Development
+      environment_unique_name: dev
+      azureServiceConnection: SC_DEV_ARM-app01
+      location: southindia
+      location_shortname : sti
+      deployname : ${{parameters.deploy_name}}
+      templateFile: bicep/main.bicep
+
+- ${{ if eq( parameters.deploy_qa, true) }}:
+  - template: \cicd\update-applications.yml
+    parameters:
+      app_name: demo-app01
+      environment_friendly_name: TEST
+      environment_name: TEST
+      environment_unique_name: test
+      azureServiceConnection: SC_TEST_ARM-app01
+      location: southeastasia
+      location_shortname : sea
+      deployname : ${{parameters.deploy_name}}
+      templateFile: bicep/main.bicep

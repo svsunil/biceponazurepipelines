@@ -1,0 +1,59 @@
+parameters:
+  - name: app_name
+    type: string
+
+  - name: environment_name
+  - name: environment_friendly_name
+  - name: environment_unique_name
+  - name: azureServiceConnection
+
+  - name: location
+    type: string
+  - name: location_shortname
+    type: string
+  - name: deployname
+    type: string     
+  - name: templateFile
+    type: string
+
+stages:
+  - stage: ${{ parameters.environment_unique_name }}_Lint
+    jobs:
+    - job: LintCode
+      steps:
+        - script: |
+            az bicep build --file '${{parameters.templateFile}}'
+          name: LintBicepCode
+          displayName: Run Bicep linter
+
+  - stage: ${{ parameters.environment_unique_name }}_deploy_stage
+    dependsOn: ${{ parameters.environment_unique_name }}_Lint
+    displayName: '[${{ parameters.environment_friendly_name }}] Deploy Resources'
+    jobs:
+      - job: ${{ parameters.environment_unique_name }}_deploy
+        steps:
+            # creation of runtime.json for selection of environment specific variables
+        - task: PowerShell@2
+          displayName: 'Copy Specific Config'
+          inputs:
+            targetType: inline
+            script: Copy-Item -Path bicep/modules/vars/${{ parameters.environment_unique_name }}.json -Destination bicep/modules/vars/runtime.json
+        - task: PowerShell@2
+          displayName: 'show content of new file'
+          inputs:
+             targetType: inline
+             script: Get-Content bicep/modules/vars/runtime.json
+
+ # Deployment of bicep code
+        - task: AzureResourceManagerTemplateDeployment@3
+          inputs:
+            deploymentScope: 'Resource Group'
+            azureResourceManagerConnection: '${{parameters.azureServiceConnection}}'
+            action: 'Create Or Update Resource Group'
+         # (Required) Provide the name of a resource group.
+            resourceGroupName: 'rg-${{ lower(parameters.app_name) }}-${{parameters.location_shortname}}-${{parameters.environment_unique_name}}'
+            location: '${{parameters.location}}'
+            templateLocation: 'Linked artifact'
+            csmFile: '${{parameters.templateFile}}'
+            deploymentMode: 'Incremental'
+            deploymentName: 'DeployApplicationTemplate-${{parameters.deployname}}'

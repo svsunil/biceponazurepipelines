@@ -1,0 +1,16 @@
+// will be overwritten by the conntent of the environment specific json file during runtime.
+// This will ensure a dynamic selection on the right variables / config for each stage.
+// contains only dummy values
+
+{
+    "_comment": "dummy",
+    
+    "name_prefix": "dummy",
+    "short_location": "dummy",
+    "location": "dummy",
+    "unique_stage": "dummy",
+    
+    "resourceTags": {
+        "Environment": "dummy"
+      }
+}
